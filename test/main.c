@@ -3,6 +3,7 @@
 int
 main (void)
 {
+  // matrix tests
   test_mat2x2f_add ();
   test_mat3x3f_add ();
   test_mat3x4f_add ();
@@ -34,6 +35,12 @@ main (void)
   test_mat3x4f_mul_scalar ();
   test_mat4x3f_mul_scalar ();
   test_mat4x4f_mul_scalar ();
+
+  test_mat2x2f_div_scalar ();
+  test_mat3x3f_div_scalar ();
+  test_mat3x4f_div_scalar ();
+  test_mat4x3f_div_scalar ();
+  test_mat4x4f_div_scalar ();
 
   return 0;
 }
