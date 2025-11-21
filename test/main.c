@@ -1,0 +1,33 @@
+#include "matrix_test.h"
+
+int
+main (void)
+{
+  test_mat2x2f_add ();
+  test_mat3x3f_add ();
+  test_mat3x4f_add ();
+  test_mat4x3f_add ();
+  test_mat4x4f_add ();
+
+  test_mat2x2f_sub ();
+  test_mat3x3f_sub ();
+  test_mat3x4f_sub ();
+  test_mat4x4f_sub ();
+
+  test_mat2x2f_mul ();
+  test_mat3x3f_mul ();
+  test_mat4x4f_mul ();
+
+  test_mat3x3f_mul_mat3x4f ();
+  test_mat3x4f_mul_mat4x4f ();
+  test_mat4x3f_mul_mat3x4f ();
+  test_mat4x4f_mul_mat4x3f ();
+
+  test_mat2x2f_mul_vec2f ();
+  test_mat3x3f_mul_vec3f ();
+  test_mat3x4f_mul_vec4f ();
+  test_mat4x3f_mul_vec3f ();
+  test_mat4x4f_mul_vec4f ();
+
+  return 0;
+}
