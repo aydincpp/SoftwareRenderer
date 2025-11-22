@@ -12,6 +12,9 @@ add_compile_options(-Wall -Wextra -O2)
 # add library target
 add_library(sga
     src/algorithm/bresenham.c
+    src/graphics/color.c
+    src/graphics/draw.c
+    src/graphics/pixel.c
     src/math/matrix.c
     src/math/vector.c
     src/platform/framebuffer.c

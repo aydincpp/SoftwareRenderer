@@ -20,8 +20,8 @@
 static inline bool
 in_bounds (Framebuffer *fb, Vec2i_t pos)
 {
-  return (pos.x < 0 || pos.x >= (int)fb->vinfo.xres || pos.y < 0
-          || pos.y >= (int)fb->vinfo.yres);
+  return (pos.x >= 0 || pos.x < (int)fb->vinfo.xres || pos.y >= 0
+          || pos.y < (int)fb->vinfo.yres);
 }
 
 static inline size_t
@@ -34,8 +34,9 @@ byte_offset (Framebuffer *fb, Vec2i_t pos)
 void
 set_pixel (Framebuffer *fb, Vec2i_t pos, Color8_t color)
 {
-  if (!in_bounds (fb, pos))
+  if (!in_bounds (fb, pos)) {
     return;
+  }
 
   // Calculate the byte offset in the framebuffer memory
   size_t offset = byte_offset (fb, pos);
@@ -112,7 +113,7 @@ get_pixel (Framebuffer *fb, Vec2i_t pos)
   // Handle different bytes per pixel and store pixel's bytes in raw
   if (bytes_per_pixel == 4)
     {
-    // 32-bit framebuffer
+      // 32-bit framebuffer
 #if CPU_X86
       raw = *(uint32_t *)ptr;
 #else
@@ -126,7 +127,7 @@ get_pixel (Framebuffer *fb, Vec2i_t pos)
     }
   else if (bytes_per_pixel == 2)
     {
-    // 16-bit framebuffer
+      // 16-bit framebuffer
 #if CPU_X86
       raw = *(uint16_t *)ptr;
 #else
