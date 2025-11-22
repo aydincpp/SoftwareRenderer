@@ -1,7 +1,7 @@
+#include "graphics/draw.h"
 #include "platform/framebuffer.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "graphics/draw.h"
 
 int
 main (void)
@@ -22,24 +22,18 @@ main (void)
       return EXIT_FAILURE;
     }
 
-  Pixel_t pixel = {
-      .pos = {
-        .x = fb.vinfo.xres / 2,
-        .y = fb.vinfo.yres / 2
-      },
-      .color = {
-        .r = 255,
-        .g = 255,
-        .b = 0,
-        .a = 255
-      }
-  };
-  printf("x: %d\n", pixel.pos.x);
-  printf("y: %d\n", pixel.pos.y);
+  // test: drawing a line
+  Pixel_t start = { .pos = { .x = fb.vinfo.xres / 2, .y = fb.vinfo.yres / 2 },
+                    .color = { .r = 0, .g = 255, .b = 0, .a = 255 } };
 
-  while (1) {
-    draw_pixel(&fb, pixel);
-  }
+  Pixel_t end = { .pos = { .x = fb.vinfo.xres / 2 + 300,
+                           .y = fb.vinfo.yres / 2 + 300 },
+                  .color = { .r = 255, .g = 0, .b = 0, .a = 255 } };
+
+  while (1)
+    {
+      draw_line (&fb, start, end);
+    }
 
   fb_close (&fb);
   return EXIT_SUCCESS;

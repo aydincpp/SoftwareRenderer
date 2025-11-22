@@ -4,10 +4,10 @@
 #include "graphics/pixel.h"
 #include "platform/framebuffer.h"
 
-// Wrapper for set_pixel
+/* wrapper for set_pixel */
 void draw_pixel (Framebuffer *fb, Pixel_t pixel);
 
-// Guess what
+/* guess what */
 void draw_line  (Framebuffer* fb, Pixel_t start, Pixel_t end);
 
 #endif /* DRAW_H */

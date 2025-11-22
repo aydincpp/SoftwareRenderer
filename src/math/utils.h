@@ -1,41 +1,8 @@
 #ifndef MATH_UTILS_H
 #define MATH_UTILS_H
 
-/* Define PI with enough digits for double precision */
+/* Define PI with enough digits */
 #define MATH_PI 3.14159265358979323846
-
-#ifdef __x86_64__
-static inline float math_sqrtf(float x)
-{
-  float result;
-  __asm__ ("sqrtss %1, %0"
-    : "=x"(result)
-    : "x"(x));
-  return result;
-}
-#else
-#include <math.h>
-static inline float asm_sqrtf(float x)
-{
-  return sqrtf(x);
-}
-#endif
-
-/* Calculate inverse square root fast approximation */
-static inline float
-math_inverse_sqrtf (float x)
-{
-  if (x == 0.0f)
-    return 0.0f;
-
-  float xhalf = 0.5f * x;
-  int i = *(int *)&x;
-  i = 0x5f3759df - (i >> 1);
-  x = *(float *)&i;
-  x = x * (1.5f - xhalf * x * x);
-
-  return x;
-}
 
 /* Convert degrees to radians */
 static inline float
