@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-uint32_t
+static inline uint32_t
 extract_bits_32 (uint32_t value, int offset, int length)
 {
   if (length <= 0)

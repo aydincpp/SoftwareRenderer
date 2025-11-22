@@ -7,4 +7,7 @@
 // Wrapper for set_pixel
 void draw_pixel (Framebuffer *fb, Pixel_t pixel);
 
+// Guess what
+void draw_line  (Framebuffer* fb, Pixel_t start, Pixel_t end);
+
 #endif /* DRAW_H */
