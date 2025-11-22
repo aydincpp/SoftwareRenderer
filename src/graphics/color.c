@@ -1,5 +1,6 @@
 #include "graphics/color.h"
 #include "utils/bit.h"
+#include <math.h>
 
 uint32_t
 scale_channel (uint8_t value, int length)
@@ -7,7 +8,8 @@ scale_channel (uint8_t value, int length)
   if (length <= 0)
     return 0;
   uint32_t max_value = (1u << length) - 1;
-  return (uint32_t)((value / 255.0f) * max_value + 0.5f);
+  float normalize = fminf(fmaxf(value / 255.0f, 0.0f), 1.0f);
+  return (uint32_t)((normalize * max_value + 0.5f));
 }
 
 uint8_t
