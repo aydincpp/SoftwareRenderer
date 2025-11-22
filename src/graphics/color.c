@@ -8,7 +8,7 @@ scale_channel (uint8_t value, int length)
   if (length <= 0)
     return 0;
   uint32_t max_value = (1u << length) - 1;
-  float normalize = fminf(fmaxf(value / 255.0f, 0.0f), 1.0f);
+  float normalize = fminf (fmaxf (value / 255.0f, 0.0f), 1.0f);
   return (uint32_t)((normalize * max_value + 0.5f));
 }
 
@@ -23,7 +23,7 @@ expand_channel (uint32_t value, int length)
 
 /* clang-format off */
 uint32_t
-pack_fb_color(Color8 c,
+pack_fb_color(Color8_t c,
               int r_offset, int r_length,
               int g_offset, int g_length,
               int b_offset, int b_length,
@@ -37,13 +37,13 @@ pack_fb_color(Color8 c,
   return r | g | b | a;
 }
 
-Color8
+Color8_t
 unpack_fb_color(uint32_t value,
                 int r_offset, int r_length,
                 int g_offset, int g_length,
                 int b_offset, int b_length,
                 int a_offset, int a_length) {
-  Color8 c;
+  Color8_t c;
 
   uint32_t r_raw = extract_bits_32(value, r_offset, r_length);
   uint32_t g_raw = extract_bits_32(value, g_offset, g_length);

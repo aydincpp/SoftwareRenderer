@@ -6,7 +6,7 @@
 typedef struct
 {
   uint8_t r, g, b, a;
-} Color8;
+} Color8_t;
 
 /* clang-format off */
 uint32_t
@@ -16,13 +16,13 @@ uint8_t
 expand_channel(uint32_t value, int length);
 
 uint32_t
-pack_fb_color(Color8 c,
+pack_fb_color(Color8_t c,
               int r_offset, int r_length,
               int g_offset, int g_length,
               int b_offset, int b_length,
               int a_offset, int a_length);
 
-Color8
+Color8_t
 unpack_fb_color(uint32_t value,
                 int r_offset, int r_length,
                 int g_offset, int g_length,
