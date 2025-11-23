@@ -79,10 +79,11 @@ draw_triangle_wireframe (Framebuffer *fb, Pixel_t p0, Pixel_t p1, Pixel_t p2)
 }
 
 static inline float
-edge_func (Vec2i_t a, Vec2i_t b, Vec2i_t p)
+edge_func (Vec2i_t a, Vec2i_t b, Vec2i_t c)
 {
   Vec2i_t ab = vec2i_delta (a, b);
-  return ab.x * (p.y - a.y) - ab.y * (p.x - a.x);
+  Vec2i_t ac = vec2i_delta (a, c);
+  return vec2i_cross (ab, ac);
 }
 
 void
@@ -96,7 +97,7 @@ draw_triangle_fill (Framebuffer *fb, Pixel_t v0, Pixel_t v1, Pixel_t v2)
   Pixel_t p;
   p.color = (Color8_t){ 0, 255, 0, 255 };
 
-  float area = edge_func(v0.pos, v1.pos, v2.pos);
+  float area = edge_func (v0.pos, v1.pos, v2.pos);
 
   for (int y = ymin; y < ymax; y++)
     {
@@ -106,6 +107,8 @@ draw_triangle_fill (Framebuffer *fb, Pixel_t v0, Pixel_t v1, Pixel_t v2)
           p.pos.y = y;
 
           // area of each sub-triangle
+          // v1 - v0 = edge
+          // The direction from v0 to v1
           float w0 = edge_func (v0.pos, v1.pos, p.pos);
           float w1 = edge_func (v1.pos, v2.pos, p.pos);
           float w2 = edge_func (v2.pos, v0.pos, p.pos);
