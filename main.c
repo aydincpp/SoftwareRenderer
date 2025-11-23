@@ -22,18 +22,19 @@ main (void)
       return EXIT_FAILURE;
     }
 
-  // test: drawing a line
-  Pixel_t start = { .pos = { .x = fb.vinfo.xres / 2, .y = fb.vinfo.yres / 2 },
-                    .color = { .r = 0, .g = 255, .b = 0, .a = 255 } };
+  // 3 vertices of the triangle with different colors
+  Pixel_t p0 = { .pos = { .x = fb.vinfo.xres / 4, .y = fb.vinfo.yres / 4 * 3 },
+    .color = { .r = 255, .g = 0, .b = 0, .a = 255 } };  // Red
+  Pixel_t p1 = { .pos = { .x = fb.vinfo.xres / 4 * 3, .y = fb.vinfo.yres / 4 * 3 },
+    .color = { .r = 0, .g = 255, .b = 0, .a = 255 } };  // Green
+  Pixel_t p2 = { .pos = { .x = fb.vinfo.xres / 2, .y = fb.vinfo.yres / 4 },
+    .color = { .r = 0, .g = 0, .b = 255, .a = 255 } };  // Blue
 
-  Pixel_t end = { .pos = { .x = fb.vinfo.xres / 2 + 300,
-                           .y = fb.vinfo.yres / 2 + 300 },
-                  .color = { .r = 255, .g = 0, .b = 0, .a = 255 } };
+  // Draw the triangle wireframe once
+  draw_triangle_fill(&fb, p0, p1, p2);
 
-  while (1)
-    {
-      draw_line (&fb, start, end);
-    }
+  printf("Triangle drawn. Press Enter to exit.\n");
+  getchar();
 
   fb_close (&fb);
   return EXIT_SUCCESS;
