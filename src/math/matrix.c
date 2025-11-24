@@ -758,3 +758,65 @@ mat4x4f_identity (void)
   };
   /* clang-format on */
 }
+
+Mat4x4f_t
+mat4x4f_translate (const Mat4x4f_t *m, Vec3f_t v)
+{
+  /* clang-format off */
+  Mat4x4f_t T = { .m = {
+    1.0f, 0.0f, 0.0f, v.x,
+    0.0f, 1.0f, 0.0f, v.y,
+    0.0f, 0.0f, 1.0f, v.z,
+    0.0f, 0.0f, 0.0f, 1.0f
+  }};
+  /* clang-format on */
+
+  return mat4x4f_mul (m, &T);
+}
+
+Mat4x4f_t
+mat4x4f_scale (const Mat4x4f_t *m, Vec3f_t v)
+{
+  /* clang-format off */
+  Mat4x4f_t S = { .m = {
+    v.x,  0.0f, 0.0f, 0.0f,
+    0.0f, v.y,  0.0f, 0.0f,
+    0.0f, 0.0f, v.z,  0.0f,
+    0.0f, 0.0f, 0.0f, 1.0f
+  }};
+  /* clang-format on */
+
+  return mat4x4f_mul (m, &S);
+}
+
+Mat4x4f_t
+mat4x4f_rotation (const Mat4x4f_t *m, Vec3f_t v)
+{
+  /* clang-format off */
+  Mat4x4f_t Rx = { .m = {
+    1.0f, 0.0f,       0.0f,        0.0f,
+    0.0f, cosf(v.x), -sinf(v.x),   0.0f,
+    0.0f, sinf(v.x),  cosf(v.x),   0.0f,
+    0.0f, 0.0f,       0.0f,        1.0f
+  }};
+
+  Mat4x4f_t Ry = { .m = {
+    cosf(v.y),  0.0f,  sinf(v.y),  0.0f,
+    0.0f,       1.0f,  0.0f,       0.0f,
+   -sinf(v.y),  0.0f,  cosf(v.y),  0.0f,
+    0.0f,       0.0f,  0.0f,       1.0f
+  }};
+
+  Mat4x4f_t Rz = { .m = {
+    cosf(v.z), -sinf(v.z),  0.0f, 0.0f,
+    sinf(v.z),  cosf(v.z),  0.0f, 0.0f,
+    0.0f,       0.0f,       1.0f, 0.0f,
+    0.0f,       0.0f,       0.0f, 1.0f
+  }};
+  /* clang-format on */
+
+  Mat4x4f_t R = mat4x4f_mul (&Rz, &Ry);
+  R = mat4x4f_mul (&R, &Rx);
+
+  return mat4x4f_mul (m, &R);
+}

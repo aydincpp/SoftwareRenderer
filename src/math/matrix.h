@@ -401,4 +401,26 @@ Mat3x3f_t mat3x3f_identity (void);
  */
 Mat4x4f_t mat4x4f_identity (void);
 
+/*
+ * --------------------------------------------------------------------
+ *  Transformation matrices
+ *  Returns translation, rotation, scale matrix
+ * --------------------------------------------------------------------
+ */
+
+/**
+ * @brief Returns a 4x4 translate matrix.
+ */
+Mat4x4f_t mat4x4f_translate (const Mat4x4f_t *m, Vec3f_t v);
+
+/**
+ * @brief Returns a 4x4 scale matrix.
+ */
+Mat4x4f_t mat4x4f_scale (const Mat4x4f_t *m, Vec3f_t v);
+
+/**
+ * @brief Returns a 4x4 rotation matrix matrix for x-axis
+ */
+Mat4x4f_t mat4x4f_rotation (const Mat4x4f_t *m, Vec3f_t v);
+
 #endif /* MATRIX_H */
