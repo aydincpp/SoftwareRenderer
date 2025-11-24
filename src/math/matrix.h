@@ -404,7 +404,7 @@ Mat4x4f_t mat4x4f_identity (void);
 /*
  * --------------------------------------------------------------------
  *  Transformation matrices
- *  Returns translation, rotation, scale matrix
+ *  Returns a matrix for translation, rotation or scaling transforms
  * --------------------------------------------------------------------
  */
 
