@@ -97,32 +97,18 @@ math_ceilf_to_float (float x)
   return (float)math_ceilf_to_int (x);
 }
 
-/* Return smaller of two floats */
 static inline float
-math_minf (float a, float b)
+math_fmin3f (float a, float b, float c)
 {
-  return (a < b) ? a : b;
+  float t = (a < b) ? a : b;
+  return (t < c) ? t : c;
 }
 
-/* Return larger of two floats */
 static inline float
-math_maxf (float a, float b)
+math_fmax3f (float a, float b, float c)
 {
-  return (a > b) ? a : b;
-}
-
-/* Return smaller of two ints */
-static inline int
-math_mini (int a, int b)
-{
-  return (a < b) ? a : b;
-}
-
-/* Return larger of two ints */
-static inline int
-math_maxi (int a, int b)
-{
-  return (a > b) ? a : b;
+  float t = (a > b) ? a : b;
+  return (t > c) ? t : c;
 }
 
 /* Clamp float x between min and max */
