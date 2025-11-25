@@ -42,8 +42,8 @@ set_pixel (Framebuffer *fb, Vec2i_t pos, Color8_t color)
   /* calculate the byte offset in the framebuffer memory */
   size_t offset = byte_offset (fb, pos);
 
-  /* pointer to pixel position in the framebuffer memory */
-  uint8_t *ptr = fb->fbp + offset;
+  /* pointer to pixel position in back buffer memory */
+  uint8_t *ptr = fb->back_buffer + offset;
 
   /* pack color into a 32-bit unsigned integer */
   /* clang-format off */
