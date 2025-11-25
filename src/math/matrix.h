@@ -440,7 +440,7 @@ Mat4x4f_t mat4x4f_lookat (Vec3f_t eye, Vec3f_t target, Vec3f_t up);
  * @param far Far clipping plane distance.
  * @return Perspective projection matrix.
  */
-Mat4x4f_t mat4x4f_perspective (float angle, float ratio, float near,
+Mat4x4f_t mat4x4f_perspective (float angle, float aspect, float near,
                                float far);
 
 /**
