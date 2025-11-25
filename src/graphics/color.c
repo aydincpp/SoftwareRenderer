@@ -2,13 +2,30 @@
 #include "utils/bit.h"
 #include <math.h>
 
+static inline uint8_t
+float_to_byte(float f)
+{
+  if (f < 0.0f) return 0;
+  if (f > 1.0f) return 255;
+  return (uint8_t)(f * 255.0f + 0.5f);
+}
+
+Color8_t color8_from_float_normalized(const float *rgba) {
+  return (Color8_t) {
+    float_to_byte(rgba[0]),
+    float_to_byte(rgba[1]),
+    float_to_byte(rgba[2]),
+    float_to_byte(rgba[3])
+  };
+}
+
 uint32_t
 scale_channel (uint8_t value, int length)
 {
   if (length <= 0)
     return 0;
-  uint32_t max_value = (1u << length) - 1;
-  float normalize = fminf (fmaxf (value / 255.0f, 0.0f), 1.0f);
+  uint32_t max_value  = (1u << length) - 1;
+  float normalize     = fminf (fmaxf (value / 255.0f, 0.0f), 1.0f);
   return (uint32_t)((normalize * max_value + 0.5f));
 }
 
@@ -57,5 +74,3 @@ unpack_fb_color(uint32_t value,
 
   return c;
 }
-
-/* clang-format on */
