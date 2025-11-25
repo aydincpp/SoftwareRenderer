@@ -2,16 +2,119 @@
 #include "algorithm/bresenham.h"
 #include "math/utils.h"
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 
+/**
+ * Convert normalized device coordinates (NDC) in [-1, 1] range to framebuffer pixel coordinates.
+ *
+ * NDC's x and y are mapped to framebuffer resolution with origin at top-left.
+ *
+ * @param fb  Pointer to the framebuffer with resolution info.
+ * @param pos Pointer to 2D or 3D position in NDC space.
+ * @return Coordinates as Vec2i_t corresponding to framebuffer pixels.
+ */
+static inline Vec2i_t
+ndc_to_framebuffer_coords (const Framebuffer *fb,
+                           const float *pos)
+{
+  return (Vec2i_t){
+    .x = (int)((+pos[0] * 0.5f + 0.5f) * fb->vinfo.xres),
+    .y = (int)((-pos[1] * 0.5f + 0.5f) * fb->vinfo.yres),
+  };
+}
+
+/**
+ * Convert a vertex at a given index in a vertex buffer to a Pixel_t suitable for drawing.
+ *
+ * This function extracts necessary vertex data, performs coordinate transformation,
+ * and prepares the pixel data for rendering.
+ *
+ * @param fb    Pointer to the framebuffer.
+ * @param vb    Pointer to the vertex buffer.
+ * @param index Index of the vertex in the buffer.
+ * @param out   Output pointer to Pixel_t that will be filled with transformed vertex information.
+ * @return True if conversion succeeded, false if required data was missing or invalid.
+ */
+static inline bool
+vertex_to_pixel (const Framebuffer *fb,
+                 const VertexBuffer *vb,
+                 uint32_t index,
+                 Pixel_t *out)
+{
+  if (!fb || !vb)
+    return false;
+
+  float *pos = vertex_buffer_get_attribute_pointer (vb, index, ATTR_POSITION);
+  float *col = vertex_buffer_get_attribute_pointer (vb, index, ATTR_COLOR);
+
+  if (!pos || !col)
+    {
+      *out = (Pixel_t){ .pos = { 0, 0 }, .color = { 0, 0, 0, 255 } };
+      return false;
+    }
+
+  out->pos    = ndc_to_framebuffer_coords (fb, pos);
+  out->color  = float4_to_color8 (col);
+
+  return true;
+}
+
 void
-draw_pixel (Framebuffer *fb, Pixel_t p)
+draw_vertex_buffer (Framebuffer *fb,
+                    const VertexBuffer *vb,
+                    PrimitiveType prim) {
+  switch (prim)
+    {
+    case PRIM_POINTS:
+      for (uint32_t i = 0; i < vb->vertex_count; ++i)
+        {
+          Pixel_t p;
+          vertex_to_pixel (fb, vb, i, &p);
+          draw_pixel (fb, p);
+        } break;
+
+    case PRIM_LINES:
+      for (uint32_t i = 0; i < vb->vertex_count; i += 2)
+        {
+          Pixel_t p0;
+          Pixel_t p1;
+          vertex_to_pixel (fb, vb, i, &p0);
+          vertex_to_pixel (fb, vb, i + 1, &p1);
+          draw_line (fb, p0, p1);
+        }
+      break;
+
+    case PRIM_TRIANGLES:
+      for (uint32_t i = 0; i < vb->vertex_count; i += 3)
+        {
+          Pixel_t p0;
+          Pixel_t p1;
+          Pixel_t p2;
+          vertex_to_pixel (fb, vb, i, &p0);
+          vertex_to_pixel (fb, vb, i + 1, &p1);
+          vertex_to_pixel (fb, vb, i + 2, &p2);
+          draw_triangle_fill (fb, p0, p1, p2);
+        }
+      break;
+
+    default:
+      fprintf (stderr, "INVALID_PRIMITIVE_TYPE\n");
+      break;
+    }
+}
+
+void
+draw_pixel (Framebuffer *fb,
+            Pixel_t p)
 {
   set_pixel (fb, p.pos, p.color);
 }
 
 void
-draw_line (Framebuffer *fb, Pixel_t p0, Pixel_t p1)
+draw_line (Framebuffer *fb,
+           Pixel_t p0,
+           Pixel_t p1)
 {
   /* starting and ending coordinates */
   int x1 = p0.pos.x;
@@ -71,7 +174,10 @@ draw_line (Framebuffer *fb, Pixel_t p0, Pixel_t p1)
 }
 
 void
-draw_triangle_wireframe (Framebuffer *fb, Pixel_t p0, Pixel_t p1, Pixel_t p2)
+draw_triangle_wireframe (Framebuffer *fb,
+                         Pixel_t p0,
+                         Pixel_t p1,
+                         Pixel_t p2)
 {
   draw_line (fb, p0, p1);
   draw_line (fb, p1, p2);
@@ -92,7 +198,10 @@ edge_func (Vec2i_t a, Vec2i_t b, Vec2i_t c)
 }
 
 void
-draw_triangle_fill (Framebuffer *fb, Pixel_t v0, Pixel_t v1, Pixel_t v2)
+draw_triangle_fill (Framebuffer *fb,
+                    Pixel_t v0,
+                    Pixel_t v1,
+                    Pixel_t v2)
 {
   /* triangle's bounding box */
   int xmin = (int)fminf (fminf (v0.pos.x, v1.pos.x), v2.pos.x);
