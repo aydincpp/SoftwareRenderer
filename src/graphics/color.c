@@ -10,7 +10,8 @@ float_to_byte(float f)
   return (uint8_t)(f * 255.0f + 0.5f);
 }
 
-Color8_t color8_from_float_normalized(const float *rgba) {
+Color8_t
+float4_to_color8(const float *rgba) {
   return (Color8_t) {
     float_to_byte(rgba[0]),
     float_to_byte(rgba[1]),
