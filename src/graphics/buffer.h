@@ -19,6 +19,16 @@ typedef enum
 } AttributeSemantic;
 
 /**
+ * @struct  IndexBuffer
+ * @brief   Contains indices for indexed drawing
+ */
+typedef struct
+{
+  unsigned int* data; /**< Pointer to indices */
+  size_t        count;
+} IndexBuffer;
+
+/**
  * @struct  VertexAttribute
  * @brief   Describes a single vertex attribute within a vertex layout.
  */
@@ -51,6 +61,7 @@ typedef struct
   size_t        size;              /**< Size in bytes of allocated vertex data */
   uint32_t      vertex_count;      /**< Number of vertices stored */
   VertexLayout  layout;            /**< Layout describing the vertex format */
+  IndexBuffer  *indices;
 } VertexBuffer;
 
 /**
@@ -74,17 +85,18 @@ VertexLayout vertex_layout_create (const VertexAttribute *attributes,
 void vertex_layout_destroy (VertexLayout *layout);
 
 /**
- * @brief Create a vertex buffer initialized with given data.
+ * @brief Create a vertex buffer initialized with given data or zeroed memory.
  *
- * Allocates memory for vertex_count vertices with the specified layout,
- * and copies data into the buffer. If data is NULL, buffer is allocated
- * but left uninitialized.
+ * Allocates memory for vertex_count vertices with the specified layout.
+ * If data is provided, copies the data into the buffer. If data is NULL,
+ * the buffer is zero-initialized.
  *
  * @param data          Pointer to vertex data to copy, or NULL.
  * @param layout        Vertex layout describing the buffer’s vertex format.
  * @param vertex_count  Number of vertices in the buffer.
  *
  * @return A VertexBuffer struct owning the allocated data and layout.
+ *         If allocation fails, returns a buffer with data == NULL and vertex_count == 0.
  */
 VertexBuffer vertex_buffer_create (void* data,
                                    VertexLayout layout,
@@ -110,7 +122,8 @@ void vertex_buffer_destroy (VertexBuffer *buffer);
  * @param data    Pointer to source data.
  * @param size    Number of bytes to copy.
  */
-void vertex_buffer_update (VertexBuffer *buffer, const void *data,
+void vertex_buffer_update (VertexBuffer *buffer,
+                           const void *data,
                            size_t size);
 
 /**
@@ -129,5 +142,52 @@ void vertex_buffer_update (VertexBuffer *buffer, const void *data,
 void *vertex_buffer_get_attribute_pointer (const VertexBuffer *buffer,
                                            uint32_t vertex_index,
                                            AttributeSemantic semantic);
+
+/**
+ * @brief Create an index buffer and initialize its data.
+ *
+ * Allocates memory for an index buffer to hold `count` indices.
+ * If `data` is not NULL, copies the provided indices into the buffer.
+ * If `data` is NULL, the allocated buffer is zero-initialized.
+ *
+ * @param data  Pointer to an array of indices to copy, or NULL.
+ * @param count Number of indices to allocate and copy.
+ *
+ * @return An IndexBuffer struct owning the allocated data and count.
+ *         If allocation fails, buffer.data will be NULL and count will be 0.
+ */
+IndexBuffer
+index_buffer_create(const unsigned int* data,
+                                size_t count);
+
+/**
+ * @brief Destroy an index buffer, freeing its allocated memory.
+ *
+ * Frees the memory held by the index buffer and resets its members.
+ * Does nothing if the buffer pointer or buffer data is NULL.
+ *
+ * @param buffer Pointer to the IndexBuffer to destroy.
+ */
+void
+index_buffer_destroy(IndexBuffer* buffer);
+
+/**
+ * @brief Update the contents of an existing index buffer.
+ *
+ * Copies `count` indices from `data` into the buffer.
+ * If the new count is greater than the current buffer size,
+ * the buffer is reallocated to accommodate the new size.
+ * If smaller, the extra memory is zeroed out.
+ * Does nothing if the buffer pointer, data pointer is NULL,
+ * or count is zero.
+ *
+ * @param buffer Pointer to the IndexBuffer to update.
+ * @param data   Pointer to the source index data.
+ * @param count  Number of indices to copy.
+ */
+void
+index_buffer_update(IndexBuffer* buffer,
+                    const unsigned int* data,
+                    size_t count);
 
 #endif /* BUFFER_H */

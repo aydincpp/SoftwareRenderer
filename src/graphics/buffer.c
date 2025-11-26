@@ -59,11 +59,18 @@ vertex_buffer_create (void *data,
     {
       buffer.size = 0;
       buffer.vertex_count = 0;
+      return buffer;
     }
-  else if (data)
+
+  if (data)
     {
       memcpy (buffer.data, data, buffer.size);
     }
+  else
+    {
+     memset (buffer.data, 0, buffer.size);
+    }
+
   return buffer;
 }
 
@@ -81,7 +88,9 @@ vertex_buffer_destroy (VertexBuffer *buffer)
 }
 
 void
-vertex_buffer_update (VertexBuffer *buffer, const void *data, size_t size)
+vertex_buffer_update (VertexBuffer *buffer,
+                      const void *data,
+                      size_t size)
 {
   if (size == 0 || !buffer || !data)
     return;
@@ -128,4 +137,77 @@ vertex_buffer_get_attribute_pointer (const VertexBuffer *buffer,
         }
     }
   return NULL;
+}
+
+IndexBuffer
+index_buffer_create (const unsigned int *data,
+                     size_t count)
+{
+  IndexBuffer buffer;
+  buffer.count          = count;
+  size_t size_bytes     = count * sizeof (unsigned int);
+  buffer.data           = (unsigned int *)malloc (size_bytes);
+
+  if (!buffer.data)
+    {
+      buffer.count = 0;
+      return buffer;
+    }
+
+  if (data)
+    {
+      memcpy (buffer.data, data, size_bytes);
+    }
+  else
+    {
+      memset (buffer.data, 0, size_bytes);
+    }
+
+  return buffer;
+}
+
+void
+index_buffer_destroy (IndexBuffer *buffer)
+{
+  if (!buffer || !buffer->data)
+    {
+      return;
+    }
+
+  free (buffer->data);
+  buffer->data = NULL;
+  buffer->count = 0;
+}
+
+void
+index_buffer_update (IndexBuffer *buffer,
+                     const unsigned int *data,
+                     size_t count)
+{
+  if (!buffer || !data || count == 0)
+    {
+      return;
+    }
+
+  size_t size_bytes     = count         * sizeof (unsigned int);
+  size_t old_size_bytes = buffer->count * sizeof (unsigned int);
+
+  if (count > buffer->count)
+    {
+      unsigned int *new_data = realloc (buffer->data, size_bytes);
+      if (!new_data)
+        {
+          return;
+        }
+
+      buffer->data  = new_data;
+      buffer->count = count;
+    }
+  else if (count < buffer->count)
+    {
+      memset ((char *)buffer->data + size_bytes, 0, old_size_bytes - size_bytes);
+      buffer->count = count;
+    }
+
+  memcpy (buffer->data, data, size_bytes);
 }
