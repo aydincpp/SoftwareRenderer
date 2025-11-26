@@ -434,13 +434,13 @@ Mat4x4f_t mat4x4f_lookat (Vec3f_t eye, Vec3f_t target, Vec3f_t up);
 
 /**
  * @brief Creates a symmetric perspective projection matrix.
- * @param angle Vertical field of view in radians.
+ * @param fov Vertical field of view in radians.
  * @param ratio Aspect ratio (width / height).
  * @param near Near clipping plane distance.
  * @param far Far clipping plane distance.
  * @return Perspective projection matrix.
  */
-Mat4x4f_t mat4x4f_perspective (float angle, float aspect, float near,
+Mat4x4f_t mat4x4f_perspective (float fov, float aspect, float near,
                                float far);
 
 /**

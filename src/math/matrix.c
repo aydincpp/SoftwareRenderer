@@ -837,9 +837,9 @@ mat4x4f_lookat (Vec3f_t eye, Vec3f_t target, Vec3f_t up)
 }
 
 Mat4x4f_t
-mat4x4f_perspective (float angle, float aspect, float near, float far)
+mat4x4f_perspective (float fov, float aspect, float near, float far)
 {
-  float f = 1.0f / tanf (angle * 0.5f);
+  float f = 1.0f / tanf (fov * 0.5f);
 
   return (Mat4x4f_t) {.m = {
     f / aspect,  0.0f, 0.0f,                             0.0f,
