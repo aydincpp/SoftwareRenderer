@@ -75,7 +75,7 @@ draw_vertex_buffer (Framebuffer *fb,
         } break;
 
     case PRIM_LINES:
-      for (uint32_t i = 0; i < vb->vertex_count; i += 2)
+      for (uint32_t i = 0; i + 1 < vb->vertex_count; i += 2)
         {
           Pixel_t p0;
           Pixel_t p1;
@@ -86,7 +86,7 @@ draw_vertex_buffer (Framebuffer *fb,
       break;
 
     case PRIM_TRIANGLES:
-      for (uint32_t i = 0; i < vb->vertex_count; i += 3)
+      for (uint32_t i = 0; i + 2 < vb->vertex_count; i += 3)
         {
           Pixel_t p0;
           Pixel_t p1;
@@ -102,6 +102,69 @@ draw_vertex_buffer (Framebuffer *fb,
       fprintf (stderr, "INVALID_PRIMITIVE_TYPE\n");
       break;
     }
+}
+
+void
+draw_index_buffer (Framebuffer* fb,
+                   const IndexBuffer* ib,
+                   const VertexBuffer* vb,
+                   PrimitiveType prim)
+{
+  switch (prim)
+  {
+    case PRIM_POINTS:
+      for (uint32_t i = 0; i < ib->count; ++i)
+      {
+        uint32_t vertex_index = ib->data[i];
+        if (vertex_index >= vb->vertex_count) continue;
+
+        Pixel_t p;
+        vertex_to_pixel (fb, vb, vertex_index, &p);
+        draw_pixel (fb, p);
+      } break;
+
+    case PRIM_LINES:
+      for (uint32_t i = 0; i + 1 < ib->count; i += 2)
+      {
+        uint32_t idx0 = ib->data[i];
+        uint32_t idx1 = ib->data[i + 1];
+
+        if (idx0 >= vb->vertex_count ||
+            idx1 >= vb->vertex_count) continue;
+
+        Pixel_t p0;
+        Pixel_t p1;
+        vertex_to_pixel (fb, vb, idx0, &p0);
+        vertex_to_pixel (fb, vb, idx1, &p1);
+        draw_line (fb, p0, p1);
+      }
+      break;
+
+    case PRIM_TRIANGLES:
+      for (uint32_t i = 0; i + 2 < ib->count; i += 3)
+      {
+        uint32_t idx0 = ib->data[i];
+        uint32_t idx1 = ib->data[i + 1];
+        uint32_t idx2 = ib->data[i + 2];
+
+        if (idx0 >= vb->vertex_count ||
+            idx1 >= vb->vertex_count ||
+            idx2 >= vb->vertex_count) continue;
+
+        Pixel_t p0;
+        Pixel_t p1;
+        Pixel_t p2;
+        vertex_to_pixel (fb, vb, idx0, &p0);
+        vertex_to_pixel (fb, vb, idx1, &p1);
+        vertex_to_pixel (fb, vb, idx2, &p2);
+        draw_triangle_fill (fb, p0, p1, p2);
+      }
+      break;
+
+    default:
+      fprintf (stderr, "INVALID_PRIMITIVE_TYPE\n");
+      break;
+  }
 }
 
 void
@@ -253,3 +316,4 @@ draw_triangle_fill (Framebuffer *fb,
         }
     }
 }
+

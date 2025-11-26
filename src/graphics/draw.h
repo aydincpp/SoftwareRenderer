@@ -84,7 +84,14 @@ draw_triangle_fill (Framebuffer *fb,
  * @param prim  Primitive type to draw.
  */
 void
-draw_vertex_buffer (Framebuffer *fb, const VertexBuffer *vb,
+draw_vertex_buffer (Framebuffer *fb,
+                    const VertexBuffer *vb,
                     PrimitiveType prim);
+
+void
+draw_index_buffer (Framebuffer* fb,
+                   const IndexBuffer* ib,
+                   const VertexBuffer* vb,
+                   PrimitiveType prim);
 
 #endif /* DRAW_H */
