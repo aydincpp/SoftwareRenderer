@@ -20,12 +20,12 @@ typedef enum
 
 /**
  * @struct  IndexBuffer
- * @brief   Contains indices for indexed drawing
+ * @brief   Stores an array of indices used for indexed drawing.
  */
 typedef struct
 {
-  unsigned int* data; /**< Pointer to indices */
-  size_t        count;
+  unsigned int* data;   /**< Pointer to dynamically allocated array of indices */
+  size_t        count;  /**< Number of indices stored in the buffer */
 } IndexBuffer;
 
 /**
