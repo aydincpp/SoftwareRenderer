@@ -13,6 +13,7 @@
 #include <unistd.h>
 
 #define COUNT_OF_ARRAY(array) (sizeof(array) / sizeof(array[0]))
+#define GRID_VERTEX_COUNT(half) ((((half) * 2) + 1) * 4)
 
 typedef struct {
   Vec3f_t pos;
@@ -23,7 +24,17 @@ typedef struct {
   Mat4x4f_t model;
   Mat4x4f_t view;
   Mat4x4f_t proj;
-} TransformMatrices;
+} MeshTransforms;
+
+typedef struct {
+  VertexBuffer* vertexBuffer;
+  IndexBuffer*  indexBuffer;
+} MeshGeometry;
+
+typedef struct {
+  MeshGeometry*   geometry;
+  MeshTransforms  transforms;
+} MeshInstance;
 
 typedef struct {
   Vec3f_t eye;
@@ -89,15 +100,15 @@ int main (void)
   Input input;
   input_init(&input);
 
-  // define vertices
-  const Vertex vertices[] = {
+  // define triangle vertices
+  const Vertex triangle_vertices[] = {
     { .pos = {-0.5f, -0.5f, 0.0f }, .col = { 1.0f, 0.0f, 0.0f, 1.0f } },
     { .pos = { 0.5f, -0.5f, 0.0f }, .col = { 0.0f, 1.0f, 0.0f, 1.0f } },
     { .pos = { 0.0f,  0.5f, 0.0f }, .col = { 0.0f, 0.0f, 1.0f, 1.0f } }
   };
 
-  // define indices
-  const unsigned int indices[] = {
+  // define triangle indices
+  const unsigned int triangle_indices[] = {
     0, 1, 2
   };
 
@@ -106,22 +117,24 @@ int main (void)
     { ATTR_POSITION, offsetof(Vertex, pos), sizeof(float), 3 },
     { ATTR_COLOR,    offsetof(Vertex, col), sizeof(float), 4 }
   };
-  VertexLayout layout = vertex_layout_create(attributes, COUNT_OF_ARRAY(attributes), sizeof(Vertex));
-  VertexBuffer vb     = vertex_buffer_create(vertices, layout, COUNT_OF_ARRAY(vertices));
-  IndexBuffer  ib     = index_buffer_create(indices, COUNT_OF_ARRAY(indices));
+  VertexLayout layout       = vertex_layout_create(attributes, COUNT_OF_ARRAY(attributes), sizeof(Vertex));
+
+  // create triangle buffers
+  VertexBuffer triangle_vb  = vertex_buffer_create(triangle_vertices, layout, COUNT_OF_ARRAY(triangle_vertices));
+  IndexBuffer  triangle_ib  = index_buffer_create(triangle_indices, COUNT_OF_ARRAY(triangle_indices));
 
   float angle = 0.0f;
-  TransformMatrices transformMatrices;
+  MeshTransforms transformMatrices;
 
   // initialize camera
   Camera camera = {
-    .eye          = { 0.0f,  0.0f,  10.0f },
+    .eye          = { 0.0f,  0.0f,  1.0f },
     .target       = { 0.0f,  0.0f,  0.0f },
-    .up           = { 0.0f, -1.0f,  0.0f },
+    .up           = { 0.0f,  1.0f,  0.0f },
     .fov          = deg_to_rad(60),
     .aspect       = fb.aspect,
-    .near         = 0.1f,
-    .far          = 1000.0f,
+    .near         = 1.0f,
+    .far          = 10.0f,
     .yaw          = 0.0f,
     .pitch        = 0.0f,
     .move_speed   = 0.1f,
@@ -139,7 +152,7 @@ int main (void)
     handle_input(&input, &camera);
 
     // model matrix
-    Vec3f_t rotation = { angle, angle, angle };
+    Vec3f_t rotation = { 0.0f, 0.0f, 0.0f };
     transformMatrices.model = mat4x4f_identity();
     transformMatrices.model = mat4x4f_rotation(&transformMatrices.model, rotation);
 
@@ -153,32 +166,36 @@ int main (void)
     Mat4x4f_t mvp = mat4x4f_mul(&transformMatrices.view, &transformMatrices.model);
     mvp           = mat4x4f_mul(&transformMatrices.proj, &mvp);
 
-    // update vertices
-    for (size_t i = 0; i < vb.vertex_count; ++i) {
+    // update triangle vertices
+    for (size_t i = 0; i < triangle_vb.vertex_count; ++i) {
       // get the position attribute for the vertex
-      Vec3f_t* position = get_attribute_pointer(&vb, i, ATTR_POSITION);
+      Vec3f_t* position = get_attribute_pointer(&triangle_vb, i, ATTR_POSITION);
 
       // convert to homogeneous coordinates
-      Vec4f_t vertex_position = { vertices[i].pos.x, vertices[i].pos.y, vertices[i].pos.z, 1.0f };
+      Vec4f_t vertex_position = {
+        triangle_vertices[i].pos.x,
+        triangle_vertices[i].pos.y,
+        triangle_vertices[i].pos.z,
+        1.0f };
 
       // apply the MVP matrix
-      Vec4f_t transformed_position = mat4x4f_mul_vec4f(&mvp, &vertex_position);
+      Vec4f_t transformed_vertex = mat4x4f_mul_vec4f(&mvp, &vertex_position);
 
       // apply perspective division
-      if (transformed_position.w != 0.0f) {
-        transformed_position.x /= transformed_position.w;
-        transformed_position.y /= transformed_position.w;
-        transformed_position.z /= transformed_position.w;
+      if (transformed_vertex.w != 0.0f) {
+        transformed_vertex.x /= transformed_vertex.w;
+        transformed_vertex.y /= transformed_vertex.w;
+        transformed_vertex.z /= transformed_vertex.w;
       }
 
-      // update vertex position
-      position->x = transformed_position.x;
-      position->y = transformed_position.y;
-      position->z = transformed_position.z;
+      // update triangle vertex position
+      position->x = transformed_vertex.x;
+      position->y = transformed_vertex.y;
+      position->z = transformed_vertex.z;
     }
 
     fb_clear(&fb);
-    draw_index_buffer(&fb, &ib, &vb, PRIM_TRIANGLES);
+    draw_index_buffer(&fb, &triangle_ib, &triangle_vb, PRIM_TRIANGLES);
     fb_present(&fb);
 
     // update angle
@@ -191,10 +208,10 @@ int main (void)
   }
 
   // cleanup and exit
-  vertex_buffer_destroy(&vb);
-  index_buffer_destroy(&ib);
+  vertex_buffer_destroy(&triangle_vb);
+  index_buffer_destroy(&triangle_ib);
   input_shutdown();
-  fb_close(&fb);
+  fb_shutdown(&fb);
 
   return EXIT_SUCCESS;
 }

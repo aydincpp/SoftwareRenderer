@@ -9,6 +9,7 @@ typedef struct
 {
   Vec2i_t pos;
   Color8_t color;
+  float depth;
 } Pixel_t;
 
 /* clang-format off */
