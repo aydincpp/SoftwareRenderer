@@ -51,7 +51,8 @@ typedef struct {
   float rotate_speed;
 } Camera;
 
-Vec3f_t camera_get_direction(const Camera* cam) {
+Vec3f_t
+camera_get_direction(const Camera* cam) {
   Vec3f_t dir;
   dir.x = cosf(cam->pitch) * sinf(cam->yaw);
   dir.y = sinf(cam->pitch);
@@ -90,7 +91,8 @@ void handle_input(Input* input, Camera* camera)
   }
 }
 
-static inline Mat4x4f_t build_mvp(const MeshTransforms* t, const Camera* cam) {
+static inline Mat4x4f_t
+build_mvp(const MeshTransforms* t, const Camera* cam) {
   Mat4x4f_t view        = mat4x4f_lookat(cam->eye, cam->target, cam->up);
   Mat4x4f_t projection  = mat4x4f_perspective(cam->fov, cam->aspect, cam->near, cam->far);
 
@@ -100,9 +102,10 @@ static inline Mat4x4f_t build_mvp(const MeshTransforms* t, const Camera* cam) {
   return mvp;
 }
 
-static inline void update_vertices(VertexBuffer* vb,
-                                   const Vertex* source,
-                                   const Mat4x4f_t* mvp)
+static inline void
+update_vertices(VertexBuffer* vb,
+                const Vertex* source,
+                const Mat4x4f_t* mvp)
 {
   for (size_t i = 0; i < vb->vertex_count; ++i) {
     Vec3f_t* pos = get_attribute_pointer(vb, i, ATTR_POSITION);
@@ -125,6 +128,21 @@ static inline void update_vertices(VertexBuffer* vb,
     pos->x = t.x;
     pos->y = t.y;
     pos->z = t.z;
+  }
+}
+
+void create_grid(Vertex* vertices, float half, float step)
+{
+  Vec4f_t color = { 0.4f, 0.4f, 0.4f, 1.0f };
+
+  size_t v_idx = 0;
+
+  for (float p = -half; p <= half; p += step) {
+    vertices[v_idx++] = (Vertex){ { -half, 0.0f, p }, color };
+    vertices[v_idx++] = (Vertex){ { +half, 0.0f, p }, color };
+
+    vertices[v_idx++] = (Vertex){ { p, 0.0f, -half }, color };
+    vertices[v_idx++] = (Vertex){ { p, 0.0f, +half }, color };
   }
 }
 
@@ -223,6 +241,28 @@ int main (void)
   cube.transforms.view        = mat4x4f_zero();
   cube.transforms.projection  = mat4x4f_zero();
 
+  // generate grid
+  float grid_half = 2.0f;
+  float grid_step = 1.0f;
+
+  size_t grid_vertex_count = GRID_VERTEX_COUNT(grid_half);
+  Vertex* grid_vertices    = malloc(sizeof(Vertex) * grid_vertex_count);
+
+  create_grid(grid_vertices, grid_half, grid_step);
+
+  // define grid
+  MeshInstance grid;
+
+  // initialize grid geometry
+  grid.geometry.vertexLayout = vertex_layout_create(attributes, COUNT_OF_ARRAY(attributes), sizeof(Vertex));
+  grid.geometry.vertexBuffer = vertex_buffer_create(grid_vertices, grid.geometry.vertexLayout, GRID_VERTEX_COUNT(grid_half));
+  grid.geometry.indexBuffer  = index_buffer_create(NULL, 0);
+
+  // initialize grid transforms
+  grid.transforms.model       = mat4x4f_zero();
+  grid.transforms.view        = mat4x4f_zero();
+  grid.transforms.projection  = mat4x4f_zero();
+
   float angle = 0.0f;
 
   // initialize camera
@@ -253,25 +293,42 @@ int main (void)
     // update triangle transoforms
     // triangle.transforms.model = mat4x4f_identity();
     // triangle.transforms.model = mat4x4f_rotation(&triangle.transforms.model, (Vec3f_t){angle, angle, angle});
+
     // update cube transforms
     cube.transforms.model = mat4x4f_identity();
     cube.transforms.model = mat4x4f_rotation(&cube.transforms.model, (Vec3f_t){angle, angle, angle});
 
+    // update grid transforms
+    grid.transforms.model = mat4x4f_identity();
+    // grid.transforms.model = mat4x4f_rotation(&grid.transforms.model, (Vec3f_t){angle, angle, angle});
+
     // create triangle mvp
     // Mat4x4f_t triangle_mvp = build_mvp(&triangle.transforms, &camera);
+
     // create cube mvp
     Mat4x4f_t cube_mvp = build_mvp(&cube.transforms, &camera);
+
+    // create grid mvp
+    Mat4x4f_t grid_mvp = build_mvp(&grid.transforms, &camera);
 
     // update triangle vertices
     // update_vertices(&triangle.geometry.vertexBuffer,
     //                 triangle_vertices,
     //                 &triangle_mvp);
+
     // update cube vertices
     update_vertices(&cube.geometry.vertexBuffer,
                     cube_vertices,
                     &cube_mvp);
+
+    // update grid vertices
+    update_vertices(&grid.geometry.vertexBuffer,
+                    grid_vertices,
+                    &grid_mvp);
+
     fb_clear(&fb);
     // draw_index_buffer(&fb, &triangle.geometry.indexBuffer, &triangle.geometry.vertexBuffer, PRIM_TRIANGLES);
+    draw_vertex_buffer(&fb, &grid.geometry.vertexBuffer, PRIM_LINES);
     draw_index_buffer(&fb, &cube.geometry.indexBuffer, &cube.geometry.vertexBuffer, PRIM_TRIANGLES);
     fb_present(&fb);
 
